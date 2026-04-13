@@ -1,7 +1,7 @@
-package com.example.tasksystem.repository;
+package com.tasksystem.repository;
 
-import com.example.tasksystem.entity.Task;
-import com.example.tasksystem.entity.TaskStatus;
+import com.tasksystem.entity.Task;
+import com.tasksystem.entity.TaskStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

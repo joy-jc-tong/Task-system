@@ -1,10 +1,10 @@
-package com.example.tasksystem;
+package com.tasksystem;
 
-import com.example.tasksystem.dto.CreateTaskRequest;
-import com.example.tasksystem.dto.TaskDTO;
-import com.example.tasksystem.entity.TaskStatus;
-import com.example.tasksystem.repository.TaskRepository;
-import com.example.tasksystem.service.TaskService;
+import com.tasksystem.dto.CreateTaskRequest;
+import com.tasksystem.dto.TaskDTO;
+import com.tasksystem.entity.TaskStatus;
+import com.tasksystem.repository.TaskRepository;
+import com.tasksystem.service.TaskService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

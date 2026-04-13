@@ -40,7 +40,7 @@
 ### 2. 核心套件結構
 
 ```
-src/main/java/com/example/tasksystem/
+src/main/java/com/tasksystem/
 │
 ├── controller/              # Web 層 - 接收 HTTP 請求
 │   └── TaskController      # 處理任務相關的 REST 端點

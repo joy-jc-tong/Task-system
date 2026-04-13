@@ -7,7 +7,7 @@
 - ✅ **標準分層架構** - Controller → Service → Repository
 - ✅ **REST API** - 完整的 RESTful API 設計
 - ✅ **資料持久化** - 使用 JPA 和 Hibernate
-- ✅ **資料庫支援** - H2 (開發) 和 MySQL (生產)
+- ✅ **資料庫支援** - PostgreSQL (開發) 和 MySQL (生產)
 - ✅ **輸入驗證** - 使用 Jakarta Validation
 - ✅ **單元測試** - 完整的測試用例
 - ✅ **CORS 支援** - 跨域資源共享設定
@@ -22,7 +22,7 @@
 | Spring Data JPA | 3.2.0 |
 | Jakarta Persistence | 3.1.0 |
 | Lombok | 1.18+ |
-| H2 Database | Latest |
+| PostgreSQL | Latest |
 | MySQL | 8.0.33 |
 
 ## 專案結構
@@ -31,7 +31,7 @@
 task-system/
 ├── src/
 │   ├── main/
-│   │   ├── java/com/example/tasksystem/
+│   │   ├── java/com/tasksystem/
 │   │   │   ├── controller/          # 控制器層
 │   │   │   ├── service/             # 業務邏輯層
 │   │   │   │   └── impl/           # 實現類
@@ -69,15 +69,24 @@ mvn spring-boot:run
 
 應用將在 `http://localhost:8080/api` 啟動
 
-### 3. 訪問 H2 Console（開發環境）
+### 3. 設定 PostgreSQL 資料庫（開發環境）
 
-```
-http://localhost:8080/api/h2-console
+確保 PostgreSQL 服務正在運行，並建立資料庫：
+
+```sql
+-- 建立資料庫
+CREATE DATABASE taskdb;
+
+-- 建立使用者（如果需要）
+CREATE USER postgres WITH PASSWORD 'postgres';
+GRANT ALL PRIVILEGES ON DATABASE taskdb TO postgres;
 ```
 
-**JDBC URL:** `jdbc:h2:mem:taskdb`  
-**Username:** `sa`  
-**Password:** (留空)
+**預設連線資訊：**
+- **主機:** `localhost:5432`
+- **資料庫:** `taskdb`
+- **使用者:** `postgres`
+- **密碼:** `postgres`
 
 ## API 端點
 
@@ -175,10 +184,20 @@ spring:
       ddl-auto: update  # 自動建立/更新表格
     show-sql: false      # 不顯示 SQL 陳述式
   datasource:
-    url: jdbc:h2:mem:taskdb  # H2 記憶體資料庫
+    url: jdbc:postgresql://localhost:5432/taskdb  # PostgreSQL 資料庫
 ```
 
 ## 常見問題
+
+### Q: 如何設定 PostgreSQL 資料庫？
+
+A: 請參考 [POSTGRESQL_SETUP.md](POSTGRESQL_SETUP.md) 檔案獲取詳細設定說明。
+
+基本設定步驟：
+1. 安裝 PostgreSQL
+2. 建立資料庫：`CREATE DATABASE taskdb;`
+3. 建立使用者並授權
+4. 更新 `application.yml` 中的連線資訊
 
 ### Q: 如何切換到 MySQL 資料庫？
 

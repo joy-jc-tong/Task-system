@@ -1,6 +1,6 @@
-package com.example.tasksystem.dto;
+package com.tasksystem.dto;
 
-import com.example.tasksystem.entity.TaskStatus;
+import com.tasksystem.entity.TaskStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

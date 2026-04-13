@@ -1,8 +1,8 @@
-package com.example.tasksystem.service;
+package com.tasksystem.service;
 
-import com.example.tasksystem.dto.CreateTaskRequest;
-import com.example.tasksystem.dto.TaskDTO;
-import com.example.tasksystem.entity.TaskStatus;
+import com.tasksystem.dto.CreateTaskRequest;
+import com.tasksystem.dto.TaskDTO;
+import com.tasksystem.entity.TaskStatus;
 
 import java.util.List;
 

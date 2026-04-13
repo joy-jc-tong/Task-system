@@ -1,9 +1,9 @@
-package com.example.tasksystem.controller;
+package com.tasksystem.controller;
 
-import com.example.tasksystem.dto.CreateTaskRequest;
-import com.example.tasksystem.dto.TaskDTO;
-import com.example.tasksystem.entity.TaskStatus;
-import com.example.tasksystem.service.TaskService;
+import com.tasksystem.dto.CreateTaskRequest;
+import com.tasksystem.dto.TaskDTO;
+import com.tasksystem.entity.TaskStatus;
+import com.tasksystem.service.TaskService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

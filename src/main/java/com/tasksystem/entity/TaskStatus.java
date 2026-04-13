@@ -1,4 +1,4 @@
-package com.example.tasksystem.entity;
+package com.tasksystem.entity;
 
 /**
  * 任務狀態列舉

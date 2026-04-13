@@ -1,4 +1,4 @@
-package com.example.tasksystem.entity;
+package com.tasksystem.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
