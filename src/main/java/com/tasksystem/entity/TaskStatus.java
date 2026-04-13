@@ -4,10 +4,10 @@ package com.tasksystem.entity;
  * 任務狀態列舉
  */
 public enum TaskStatus {
-    TODO("待辦"),
-    IN_PROGRESS("進行中"),
-    COMPLETED("已完成"),
-    CANCELLED("已取消");
+    PENDING("閒置"),
+    RUNNING("進行中"),
+    SUCCESS("成功"),
+    FAILED("失敗");
 
     private final String description;
 

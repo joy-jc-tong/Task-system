@@ -201,7 +201,7 @@ public class TaskRepository {
 public class TaskServiceImpl {
     public void deleteTask(Long id) {
         Task task = taskRepository.getById(id);
-        if (task.getStatus() == TaskStatus.IN_PROGRESS) {
+        if (task.getStatus() == TaskStatus.RUNNING) {
             throw new BusinessException("進行中的任務不能刪除");
         }
         taskRepository.delete(task);
@@ -232,7 +232,7 @@ A:
 部分更新         PATCH  /api/v1/tasks/{id}
 刪除任務         DELETE /api/v1/tasks/{id}
 
-按狀態查詢       GET    /api/v1/tasks?status=TODO
+按狀態查詢       GET    /api/v1/tasks?status=PENDING
 分頁查詢         GET    /api/v1/tasks?page=1&size=10
 ```
 
@@ -255,7 +255,7 @@ A: 統一的回應格式：
     "data": {
         "id": 1,
         "title": "任務",
-        "status": "TODO"
+        "status": "PENDING"
     }
 }
 

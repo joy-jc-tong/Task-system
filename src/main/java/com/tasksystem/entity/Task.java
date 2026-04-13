@@ -50,7 +50,7 @@ public class Task {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
         if (status == null) {
-            status = TaskStatus.TODO;
+            status = TaskStatus.PENDING;
         }
     }
 

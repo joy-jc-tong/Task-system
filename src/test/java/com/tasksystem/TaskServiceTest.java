@@ -43,7 +43,7 @@ class TaskServiceTest {
 
         assertNotNull(createdTask.getId());
         assertEquals("測試任務", createdTask.getTitle());
-        assertEquals(TaskStatus.TODO, createdTask.getStatus());
+        assertEquals(TaskStatus.PENDING, createdTask.getStatus());
     }
 
     @Test
@@ -72,8 +72,8 @@ class TaskServiceTest {
                 .build();
 
         TaskDTO createdTask = taskService.createTask(request);
-        TaskDTO updatedTask = taskService.updateTaskStatus(createdTask.getId(), TaskStatus.IN_PROGRESS);
+        TaskDTO updatedTask = taskService.updateTaskStatus(createdTask.getId(), TaskStatus.RUNNING);
 
-        assertEquals(TaskStatus.IN_PROGRESS, updatedTask.getStatus());
+        assertEquals(TaskStatus.RUNNING, updatedTask.getStatus());
     }
 }

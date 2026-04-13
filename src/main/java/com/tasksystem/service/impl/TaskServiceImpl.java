@@ -31,7 +31,7 @@ public class TaskServiceImpl implements TaskService {
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .priority(request.getPriority())
-                .status(TaskStatus.TODO)
+                .status(TaskStatus.PENDING)
                 .build();
         
         Task savedTask = taskRepository.save(Objects.requireNonNull(task));
@@ -95,7 +95,7 @@ public class TaskServiceImpl implements TaskService {
                 .orElseThrow(() -> new RuntimeException("找不到 id 為 " + id + " 的任務"));
         
         task.setStatus(status);
-        if (status == TaskStatus.COMPLETED) {
+        if (status == TaskStatus.SUCCESS) {
             task.setCompletedAt(LocalDateTime.now());
         } else {
             task.setCompletedAt(null);

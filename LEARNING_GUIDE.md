@@ -250,7 +250,7 @@ public TaskDTO createTask(CreateTaskRequest request) {
     Task task = Task.builder()
         .title(request.getTitle())
         .priority(request.getPriority())
-        .status(TaskStatus.TODO)
+        .status(TaskStatus.PENDING)
         .build();
     
     Task saved = taskRepository.save(task);

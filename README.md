@@ -7,7 +7,7 @@
 - ✅ **標準分層架構** - Controller → Service → Repository
 - ✅ **REST API** - 完整的 RESTful API 設計
 - ✅ **資料持久化** - 使用 JPA 和 Hibernate
-- ✅ **資料庫支援** - PostgreSQL (開發) 和 MySQL (生產)
+- ✅ **資料庫支援** - PostgreSQL
 - ✅ **輸入驗證** - 使用 Jakarta Validation
 - ✅ **單元測試** - 完整的測試用例
 - ✅ **CORS 支援** - 跨域資源共享設定
@@ -23,7 +23,6 @@
 | Jakarta Persistence | 3.1.0 |
 | Lombok | 1.18+ |
 | PostgreSQL | Latest |
-| MySQL | 8.0.33 |
 
 ## 專案結構
 
@@ -53,7 +52,6 @@ task-system/
 
 - Java 17 或更高版本
 - Maven 3.6+
-- （選用）MySQL 8.0+
 
 ### 1. 建置專案
 
@@ -140,12 +138,12 @@ DELETE /api/v1/tasks/{id}
 GET /api/v1/tasks/status/{status}
 ```
 
-**狀態可選值:** `TODO`, `IN_PROGRESS`, `COMPLETED`, `CANCELLED`
+**狀態可選值:** `PENDING`, `RUNNING`, `SUCCESS`, `FAILED`
 
 ### 更新任務狀態
 
 ```http
-PATCH /api/v1/tasks/{id}/status?status=IN_PROGRESS
+PATCH /api/v1/tasks/{id}/status?status=RUNNING
 ```
 
 ## 資料庫模型
@@ -198,19 +196,6 @@ A: 請參考 [POSTGRESQL_SETUP.md](POSTGRESQL_SETUP.md) 檔案獲取詳細設定
 2. 建立資料庫：`CREATE DATABASE taskdb;`
 3. 建立使用者並授權
 4. 更新 `application.yml` 中的連線資訊
-
-### Q: 如何切換到 MySQL 資料庫？
-
-A: 修改 `application.yml`：
-
-```yaml
-spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/taskdb
-    username: root
-    password: yourpassword
-    driver-class-name: com.mysql.cj.jdbc.Driver
-```
 
 ### Q: 如何新增實體類別？
 
