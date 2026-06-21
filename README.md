@@ -1,233 +1,372 @@
-# Task System - Spring Boot 任務系統
+# AI Requirement Assistant
 
-這是一個基於 Spring Boot 3.2+ 的任務管理系統，用於學習和演示 Spring Boot 系統設計最佳實踐。
+![Java](https://img.shields.io/badge/Java-17-007396?logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2-6DB33F?logo=springboot&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)
+![License](https://img.shields.io/badge/license-MIT-blue)
+![Status](https://img.shields.io/badge/status-active%20development-brightgreen)
 
-## 專案特點
+> An enterprise-style requirement management and knowledge intelligence platform — built to solve the information fragmentation problem that engineers and PMs face every day.
 
-- ✅ **標準分層架構** - Controller → Service → Repository
-- ✅ **REST API** - 完整的 RESTful API 設計
-- ✅ **資料持久化** - 使用 JPA 和 Hibernate
-- ✅ **資料庫支援** - PostgreSQL
-- ✅ **輸入驗證** - 使用 Jakarta Validation
-- ✅ **單元測試** - 完整的測試用例
-- ✅ **CORS 支援** - 跨域資源共享設定
-- ✅ **日誌記錄** - 完善的日誌管理
+---
 
-## 技術棧
+## Table of Contents
 
-| 技術 | 版本 |
-|-----|------|
-| Java | 17 |
-| Spring Boot | 3.2.0 |
-| Spring Data JPA | 3.2.0 |
-| Jakarta Persistence | 3.1.0 |
-| Lombok | 1.18+ |
-| PostgreSQL | Latest |
+- [Overview](#overview)
+- [Business Problem](#business-problem)
+- [Solution](#solution)
+- [Architecture](#architecture)
+- [Technology Stack](#technology-stack)
+- [Current Progress](#current-progress)
+- [API Reference](#api-reference)
+- [Getting Started](#getting-started)
+- [Roadmap](#roadmap)
+- [Future Enhancements](#future-enhancements)
 
-## 專案結構
+---
+
+## Overview
+
+**AI Requirement Assistant** is a centralized platform for managing requirements, tracking workflow states, organizing organizational documents, and enabling AI-powered knowledge retrieval.
+
+The system is designed around a real operational pain point: knowledge fragmentation across engineering teams. By combining a structured requirement management backend with a RAG (Retrieval-Augmented Generation) AI layer, it allows engineers and PMs to ask natural language questions and receive contextually grounded answers backed by real source documents — not hallucinations.
+
+This project is built with production-grade patterns: layered architecture, typed enums for workflow state machines, input validation at the boundary, read-only transaction optimization, and a planned evolution toward multi-service AI infrastructure.
+
+---
+
+## Business Problem
+
+In most organizations, the following assets live in disconnected systems:
+
+| Asset | Typical Location |
+|---|---|
+| Requirement documents | Confluence, Notion, email threads |
+| Design documents | Google Drive, SharePoint, local disks |
+| SOPs and processes | Internal wikis, PDFs, printed binders |
+| Meeting notes | Slack, Zoom recordings, notebooks |
+| Historical requirements | Jira, Linear, spreadsheets |
+
+The cost of this fragmentation is real:
+
+- Engineers spend hours searching for prior context before starting a feature
+- PMs write requirements that already exist in a slightly different form
+- New team members cannot quickly understand the rationale behind past decisions
+- Institutional knowledge leaves the organization when people do
+
+No existing tool combines structured requirement lifecycle management with semantic knowledge retrieval in a developer-friendly, self-hostable form that an engineering team can own end-to-end.
+
+---
+
+## Solution
+
+AI Requirement Assistant addresses this problem in two layers:
+
+**Layer 1 — Structured Requirement Management**
+
+A REST API backend that manages the full lifecycle of a requirement: from `DRAFT` through `REVIEW`, and into `APPROVED` or `REJECTED`. Every requirement carries a typed priority level (`LOW` / `MEDIUM` / `HIGH` / `URGENT`), automatic lifecycle timestamps, and status transitions enforced at the service layer. The data model is designed for auditability and workflow correctness from the start.
+
+**Layer 2 — AI Knowledge Intelligence** *(planned — Phase 5)*
+
+A FastAPI sidecar service that ingests uploaded documents into a pgvector embedding store and exposes three capabilities:
+
+- **Semantic search** — find the most relevant document chunks for any natural language query
+- **RAG-based Q&A** — ask a question, receive an answer grounded in your organization's own documents with citations
+- **Duplicate detection** — surface similar historical requirements automatically before a new one is submitted
+
+---
+
+## Architecture
+
+### Current Architecture (Phase 1)
 
 ```
-task-system/
-├── src/
-│   ├── main/
-│   │   ├── java/com/tasksystem/
-│   │   │   ├── controller/          # 控制器層
-│   │   │   ├── service/             # 業務邏輯層
-│   │   │   │   └── impl/           # 實現類
-│   │   │   ├── repository/          # 資料訪問層
-│   │   │   ├── entity/              # 實體類
-│   │   │   ├── dto/                 # 資料傳輸物件
-│   │   │   ├── config/              # 設定類
-│   │   │   └── TaskSystemApplication.java  # 應用入口
-│   │   └── resources/
-│   │       └── application.yml      # 應用設定
-│   └── test/                        # 測試程式碼
-├── pom.xml                          # Maven 設定
-└── README.md
+┌──────────────────────────────────────────────────────────┐
+│                   Client / REST Consumer                  │
+└──────────────────────────┬───────────────────────────────┘
+                           │  HTTP
+┌──────────────────────────▼───────────────────────────────┐
+│            Spring Boot Application  (:8080)              │
+│                                                           │
+│  ┌────────────────────┐   ┌────────────────────────────┐ │
+│  │  RequirementController│  │     RequirementService     │ │
+│  │  /api/requirements  │──▶│  (Business Logic,          │ │
+│  └────────────────────┘   │   @Transactional)          │ │
+│                            └──────────────┬─────────────┘ │
+│                                           │               │
+│                            ┌──────────────▼─────────────┐ │
+│                            │   RequirementRepository     │ │
+│                            │   (Spring Data JPA)         │ │
+│                            └──────────────┬─────────────┘ │
+└───────────────────────────────────────────┼───────────────┘
+                                            │
+                             ┌──────────────▼─────────────┐
+                             │         PostgreSQL           │
+                             │    (requirements table)      │
+                             └─────────────────────────────┘
 ```
 
-## 快速開始
+### Target Architecture (Phase 5+)
 
-### 前置需求
-
-- Java 17 或更高版本
-- Maven 3.6+
-
-### 1. 建置專案
-
-```bash
-mvn clean install
+```
+┌───────────────────────────────────────────────────────────────┐
+│                      Client / Frontend                         │
+└───────────────────────────────┬───────────────────────────────┘
+                                │  HTTP
+┌───────────────────────────────▼───────────────────────────────┐
+│              Spring Boot API  (:8080)                          │
+│                                                                │
+│  Controller → Service → Repository                             │
+│  + Spring Security (JWT / RBAC)                                │
+│  + Audit Log (AOP / JPA EntityListeners)                       │
+└──────────────┬─────────────────────────────┬──────────────────┘
+               │                             │
+┌──────────────▼──────────────┐  ┌───────────▼───────────────────┐
+│        PostgreSQL            │  │    FastAPI AI Service (:8001)  │
+│  (requirements, users,       │  │                                │
+│   audit_logs, documents)     │  │  POST /embed  — ingest docs    │
+└─────────────────────────────┘  │  GET  /search — semantic query  │
+                                  │  POST /ask    — RAG Q&A         │
+                                  └───────────────┬───────────────┘
+                                                  │
+                                  ┌───────────────▼───────────────┐
+                                  │    PostgreSQL + pgvector        │
+                                  │    (document chunk embeddings)  │
+                                  └───────────────┬───────────────┘
+                                                  │
+                                  ┌───────────────▼───────────────┐
+                                  │          OpenAI API             │
+                                  │  text-embedding-3-small         │
+                                  │  gpt-4o                         │
+                                  └───────────────────────────────┘
 ```
 
-### 2. 執行應用
+---
+
+## Technology Stack
+
+### Current
+
+| Layer | Technology | Notes |
+|---|---|---|
+| Language | Java 17 | LTS, records, sealed classes available |
+| Framework | Spring Boot 3.2 | Auto-configuration, embedded Tomcat |
+| ORM | Spring Data JPA + Hibernate | Entity mapping, derived queries |
+| Database | PostgreSQL | Primary operational store |
+| Validation | Jakarta Bean Validation | Constraint enforcement at the API boundary |
+| Utilities | Lombok | Eliminates boilerplate builders and accessors |
+| Build | Maven | Dependency management, lifecycle |
+| Testing | JUnit 5 + Spring Boot Test | Integration tests against real PostgreSQL |
+
+### Planned
+
+| Layer | Technology | Purpose |
+|---|---|---|
+| Security | Spring Security + JWT | Stateless authentication, method-level authorization |
+| AI Service | FastAPI (Python 3.11) | Owns the entire ML pipeline, separate from JVM |
+| Embeddings | OpenAI `text-embedding-3-small` | Efficient, high-quality document embeddings |
+| LLM | OpenAI `gpt-4o` | RAG answer generation with citation prompting |
+| Vector Store | pgvector extension | Cosine similarity search inside existing PostgreSQL |
+| Containers | Docker Compose | Multi-service local orchestration |
+| File Storage | PostgreSQL / S3-compatible | Document binary storage |
+
+---
+
+## Current Progress
+
+### Phase 1 — Core Requirement Management ✅ Complete
+
+- [x] `Requirement` JPA entity with `@PrePersist` / `@PreUpdate` lifecycle hooks
+- [x] `RequirementStatus` workflow enum: `DRAFT` → `REVIEW` → `APPROVED` / `REJECTED`
+- [x] `RequirementPriority` typed enum: `LOW` / `MEDIUM` / `HIGH` / `URGENT`
+- [x] Full CRUD REST API (`POST`, `GET`, `PUT`, `DELETE`)
+- [x] Status transition endpoint (`PATCH /{id}/status`)
+- [x] Filter by status endpoint (`GET /status/{status}`)
+- [x] Input validation via Jakarta Bean Validation (`@NotBlank`, `@NotNull`)
+- [x] Clean layered architecture: Controller → Service Interface → ServiceImpl → Repository
+- [x] Read-only transaction optimization for all query methods
+- [x] CORS configuration for cross-origin API consumers
+- [x] Integration tests: create, list all, and status transition flows
+
+---
+
+## API Reference
+
+**Base URL:** `http://localhost:8080/api`
+
+### Requirement Endpoints
+
+| Method | Path | Description | Status |
+|---|---|---|---|
+| `POST` | `/requirements` | Create a new requirement | ✅ |
+| `GET` | `/requirements` | List all requirements | ✅ |
+| `GET` | `/requirements/{id}` | Get requirement by ID | ✅ |
+| `PUT` | `/requirements/{id}` | Update title / description / priority | ✅ |
+| `DELETE` | `/requirements/{id}` | Delete requirement | ✅ |
+| `GET` | `/requirements/status/{status}` | Filter requirements by status | ✅ |
+| `PATCH` | `/requirements/{id}/status` | Transition requirement status | ✅ |
+
+### Request / Response Schemas
+
+**POST `/requirements` — Request body**
+```json
+{
+  "title": "Implement SSO with Azure AD",
+  "description": "Support SAML 2.0 login for enterprise customers on the B2B plan",
+  "priority": "HIGH"
+}
+```
+
+**RequirementDTO — Response**
+```json
+{
+  "id": 1,
+  "title": "Implement SSO with Azure AD",
+  "description": "Support SAML 2.0 login for enterprise customers on the B2B plan",
+  "status": "DRAFT",
+  "priority": "HIGH",
+  "createdAt": "2026-06-21T10:30:00",
+  "updatedAt": "2026-06-21T10:30:00"
+}
+```
+
+**Valid `RequirementStatus` values:** `DRAFT` `REVIEW` `APPROVED` `REJECTED`
+
+**Valid `RequirementPriority` values:** `LOW` `MEDIUM` `HIGH` `URGENT`
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Java 17+
+- Maven 3.8+
+- PostgreSQL 14+
+
+### 1. Create the database
+
+```sql
+CREATE DATABASE requirementdb;
+```
+
+### 2. Configure the datasource
+
+Edit `src/main/resources/application.yml`:
+
+```yaml
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/requirementdb
+    username: postgres
+    password: your_password
+```
+
+Hibernate will auto-create the `requirements` table on first startup (`ddl-auto: update`).
+
+### 3. Run the application
 
 ```bash
 mvn spring-boot:run
 ```
 
-應用將在 `http://localhost:8080/api` 啟動
+The API is now available at `http://localhost:8080/api/requirements`.
 
-### 3. 設定 PostgreSQL 資料庫（開發環境）
-
-確保 PostgreSQL 服務正在運行，並建立資料庫：
-
-```sql
--- 建立資料庫
-CREATE DATABASE taskdb;
-
--- 建立使用者（如果需要）
-CREATE USER postgres WITH PASSWORD 'postgres';
-GRANT ALL PRIVILEGES ON DATABASE taskdb TO postgres;
-```
-
-**預設連線資訊：**
-- **主機:** `localhost:5432`
-- **資料庫:** `taskdb`
-- **使用者:** `postgres`
-- **密碼:** `postgres`
-
-## API 端點
-
-### 建立任務
-
-```http
-POST /api/v1/tasks
-Content-Type: application/json
-
-{
-  "title": "完成專案報告",
-  "description": "完成Q1季度的專案總結報告",
-  "priority": 1
-}
-```
-
-### 取得所有任務
-
-```http
-GET /api/v1/tasks
-```
-
-### 取得單一任務
-
-```http
-GET /api/v1/tasks/{id}
-```
-
-### 更新任務
-
-```http
-PUT /api/v1/tasks/{id}
-Content-Type: application/json
-
-{
-  "title": "更新的標題",
-  "description": "更新的描述",
-  "priority": 2
-}
-```
-
-### 刪除任務
-
-```http
-DELETE /api/v1/tasks/{id}
-```
-
-### 取得指定狀態的任務
-
-```http
-GET /api/v1/tasks/status/{status}
-```
-
-**狀態可選值:** `PENDING`, `RUNNING`, `SUCCESS`, `FAILED`
-
-### 更新任務狀態
-
-```http
-PATCH /api/v1/tasks/{id}/status?status=RUNNING
-```
-
-## 資料庫模型
-
-### Task 實體
-
-| 欄位 | 類型 | 說明 |
-|-----|------|------|
-| id | Long | 主鍵 |
-| title | String | 任務標題 |
-| description | Text | 任務描述 |
-| status | String | 任務狀態 |
-| priority | Integer | 優先級 |
-| createdAt | DateTime | 建立時間 |
-| updatedAt | DateTime | 更新時間 |
-| completedAt | DateTime | 完成時間 |
-
-## 執行測試
+### 4. Run the tests
 
 ```bash
-# 執行所有測試
 mvn test
-
-# 執行特定的測試類
-mvn test -Dtest=TaskServiceTest
 ```
 
-## 設定檔案說明
+---
 
-### application.yml
+## Roadmap
 
-```yaml
-spring:
-  jpa:
-    hibernate:
-      ddl-auto: update  # 自動建立/更新表格
-    show-sql: false      # 不顯示 SQL 陳述式
-  datasource:
-    url: jdbc:postgresql://localhost:5432/taskdb  # PostgreSQL 資料庫
-```
+### Phase 1 — Core Requirement Management ✅ Complete
 
-## 常見問題
+Layered Spring Boot REST API with typed status and priority enums, full CRUD, Jakarta validation, and integration tests backed by PostgreSQL.
 
-### Q: 如何設定 PostgreSQL 資料庫？
+---
 
-A: 請參考 [POSTGRESQL_SETUP.md](POSTGRESQL_SETUP.md) 檔案獲取詳細設定說明。
+### Phase 2 — Security & Access Control
 
-基本設定步驟：
-1. 安裝 PostgreSQL
-2. 建立資料庫：`CREATE DATABASE taskdb;`
-3. 建立使用者並授權
-4. 更新 `application.yml` 中的連線資訊
+- Spring Security with stateless JWT authentication
+- Four roles: `ADMIN`, `PM`, `ENGINEER`, `VIEWER`
+- Method-level authorization with `@PreAuthorize`
+- User registration, login, and token refresh endpoints
+- Password hashing with BCrypt
 
-### Q: 如何新增實體類別？
+---
 
-A: 
-1. 在 `entity` 套件中建立實體類別
-2. 在 `repository` 套件中建立 Repository 介面
-3. 在 `service` 套件中新增業務邏輯
+### Phase 3 — Audit Log
 
-## 學習路徑
+- `AuditLog` entity capturing actor, action, target entity, before/after values, and timestamp
+- Non-invasive instrumentation via AOP or JPA `@EntityListeners`
+- Query endpoint: full change history for any requirement
+- Immutable records — audit logs are append-only by design
 
-1. **第一步** - 瞭解專案結構和分層架構
-2. **第二步** - 學習 Spring Boot 註解和依賴注入
-3. **第三步** - 學習 JPA 和資料庫操作
-4. **第四步** - 學習 REST API 設計原則
-5. **第五步** - 學習交易管理和例外處理
-6. **第六步** - 學習單元測試和整合測試
+---
 
-## 擴展建議
+### Phase 4 — Document Management
 
-- [ ] 新增全域例外處理器
-- [ ] 實作分頁和排序功能
-- [ ] 新增使用者認証和授權
-- [ ] 實作快取機制
-- [ ] 新增 API 檔案 (Swagger/OpenAPI)
-- [ ] 實作稽核日誌
-- [ ] 新增資料加密
-- [ ] 實作非同步任務處理
+- File upload endpoint accepting PDF, DOCX, and Markdown
+- Document metadata (name, type, size, uploader, uploadedAt) stored in PostgreSQL
+- Binary content stored in PostgreSQL BYTEA or an S3-compatible bucket
+- Document-to-requirement association (many-to-many)
+- Text extraction via Apache Tika for downstream embedding
 
-## 授權條款
+---
 
-MIT License
+### Phase 5 — AI Knowledge Base (RAG Pipeline)
 
-## 聯絡方式
+- FastAPI sidecar service, independently deployable alongside the Spring Boot API
+- **Ingestion pipeline:** extract text → chunk by paragraph → embed via `text-embedding-3-small` → store vectors in pgvector
+- **Semantic search:** `GET /search?q=...` returns ranked document chunks with similarity scores
+- **RAG Q&A:** `POST /ask` retrieves top-K chunks, constructs a citation-grounded prompt, and sends to `gpt-4o`
+- Response format includes both the answer and the source documents it was derived from
 
-如有任何問題，歡迎提交 Issue 或 Pull Request。
+---
+
+### Phase 6 — Intelligent Requirement Features
+
+- **Duplicate detection:** on `POST /requirements`, automatically surface semantically similar existing requirements before saving
+- **Requirement quality scoring:** LLM-based completeness and ambiguity analysis with actionable suggestions
+- **AI-assisted draft:** generate a full requirement from a one-line brief
+
+---
+
+## Future Enhancements
+
+| Enhancement | Motivation |
+|---|---|
+| Docker Compose for full stack | One command brings up PostgreSQL, pgvector, Spring Boot, and FastAPI |
+| CI/CD via GitHub Actions | Automated build, test, and Docker image publishing on every push |
+| Swagger / OpenAPI docs | Interactive API explorer, auto-generated from Spring annotations |
+| Event-driven audit via Kafka | Decouples audit writes from the request path; enables async pipelines |
+| Approval workflow with notifications | Closes the loop on the REVIEW → APPROVED transition with email or webhook alerts |
+| Frontend (React / Next.js) | End-to-end demo surface for portfolio presentation |
+| Kubernetes manifests | Demonstrates production deployment beyond local Docker Compose |
+| Observability stack (Prometheus + Grafana) | Latency, throughput, and error rate dashboards for the API |
+| Multi-tenant isolation | Row-level security so multiple organizations can share one deployment safely |
+
+---
+
+## Design Decisions
+
+**Why a separate FastAPI service for AI, not just a Java library?**
+
+The Python ML ecosystem (LangChain, sentence-transformers, OpenAI SDK) is significantly more mature than the JVM equivalent. Keeping the AI pipeline in Python means access to the best tooling, while the Spring Boot backend stays focused on what Java does well: transactional business logic, security, and structured data management. The boundary between them is a clean HTTP API.
+
+**Why typed enums for status and priority instead of integers or free strings?**
+
+Integer codes require a lookup table in every reader's head. Free strings break at the first typo. Typed enums make the compiler a collaborator — invalid states cannot be constructed, the API rejects unrecognized values automatically, and the database stores human-readable strings that survive schema migrations without a mapping table.
+
+**Why read-only transactions on query methods?**
+
+`@Transactional(readOnly = true)` gives the persistence provider a hint to skip dirty-checking, allows the database to route queries to read replicas, and prevents accidental writes in methods that should only read. It's a cheap annotation with measurable benefits at scale.
+
+---
+
+## License
+
+MIT License — free to use, modify, and distribute.
