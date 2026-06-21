@@ -1,6 +1,7 @@
 package com.tasksystem.dto;
 
-import com.tasksystem.entity.TaskStatus;
+import com.tasksystem.entity.RequirementPriority;
+import com.tasksystem.entity.RequirementStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -8,14 +9,11 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-/**
- * 任務資料傳輸物件
- */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TaskDTO {
+public class RequirementDTO {
 
     private Long id;
 
@@ -23,13 +21,11 @@ public class TaskDTO {
 
     private String description;
 
-    private TaskStatus status;
+    private RequirementStatus status;
 
-    private Integer priority;
+    private RequirementPriority priority;
 
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
-
-    private LocalDateTime completedAt;
 }

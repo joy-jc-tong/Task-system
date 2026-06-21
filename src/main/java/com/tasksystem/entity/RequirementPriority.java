@@ -1,17 +1,14 @@
 package com.tasksystem.entity;
 
-/**
- * 任務狀態列舉
- */
-public enum TaskStatus {
-    PENDING("閒置"),
-    RUNNING("進行中"),
-    SUCCESS("成功"),
-    FAILED("失敗");
+public enum RequirementPriority {
+    LOW("低"),
+    MEDIUM("中"),
+    HIGH("高"),
+    URGENT("緊急");
 
     private final String description;
 
-    TaskStatus(String description) {
+    RequirementPriority(String description) {
         this.description = description;
     }
 

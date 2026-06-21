@@ -8,16 +8,13 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-/**
- * 任務實體類
- */
 @Entity
-@Table(name = "tasks")
+@Table(name = "requirements")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Task {
+public class Requirement {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,10 +28,11 @@ public class Task {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private TaskStatus status;
+    private RequirementStatus status;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Integer priority;
+    private RequirementPriority priority;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -42,15 +40,12 @@ public class Task {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(name = "completed_at")
-    private LocalDateTime completedAt;
-
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
         if (status == null) {
-            status = TaskStatus.PENDING;
+            status = RequirementStatus.DRAFT;
         }
     }
 
